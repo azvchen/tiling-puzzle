@@ -5,11 +5,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-object TileSpec: Spek({
+object TileSpec : Spek({
     describe("a tile") {
         val twoTile = Tile(mapOf(
-                0 to 0 to 'a',
-                1 to 0 to 'b'
+            0 to 0 to 'a',
+            1 to 0 to 'b'
         ))
         val flipTile = twoTile.reflectLR
 
@@ -32,10 +32,10 @@ object TileSpec: Spek({
 
         it("should fit on a board") {
             val board = Tile(mapOf(
-                    0 to 0 to 'a',
-                    0 to 1 to 'b',
-                    1 to 0 to 'b',
-                    1 to 1 to 'a'
+                0 to 0 to 'a',
+                0 to 1 to 'b',
+                1 to 0 to 'b',
+                1 to 1 to 'a'
             ))
 
             assertTrue(twoTile.fitAt(board, 0, 0))
