@@ -1,0 +1,3 @@
+rootProject.name = 'tiling-puzzle'
+rootProject.buildFileName = 'build.gradle.kts'
+
