@@ -1,39 +1,25 @@
 typealias Color = Char
 
-fun <T : Comparable<T>> unsafeMax(list: Iterable<T>): T {
-    return list.max() ?: throw IllegalStateException("List must be nonempty!")
-}
+fun <T : Comparable<T>> Iterable<T>.unsafeMax() = this.max() ?: throw IllegalStateException("List must be nonempty!")
 
 class Tile(private val squares: Map<Pair<Int, Int>, Color>) {
     val size = squares.size
-    val width = unsafeMax(squares.keys.map { it.first }) + 1
-    val height = unsafeMax(squares.keys.map { it.second }) + 1
+    val width = squares.keys.map { it.first }.unsafeMax() + 1
+    val height = squares.keys.map { it.second }.unsafeMax() + 1
     val dims = width to height
 
-    operator fun get(x: Int, y: Int): Color? {
-        return squares[x to y]
-    }
+    operator fun get(x: Int, y: Int): Color? = squares[x to y]
 
-    fun fitAt(board: Tile, x: Int, y: Int): Boolean {
-        for ((pos, c) in squares) {
-            if (c != board[x + pos.first, y + pos.second]) {
-                return false
-            }
-        }
-        return true
+    fun fitAt(board: Tile, x: Int, y: Int): Boolean = squares.all { (pos, color) ->
+        color == board[x + pos.first, y + pos.second]
     }
 
     val reflectLR: Tile by lazy {
-        val newSquares = mutableMapOf<Pair<Int, Int>, Color>()
-        for ((pos, c) in squares) {
-            newSquares[width - pos.first - 1 to pos.second] = c
-        }
+        val newSquares = squares.map { (pos, color) -> width - pos.first - 1 to pos.second to color }.toMap()
         Tile(newSquares)
     }
 
-    override fun toString(): String {
-        return (0 until height).joinToString(separator = "\n") {
-            c -> (0 until width).map { r -> this[r, c] ?: ' ' } .joinToString(separator = "")
-        }
+    override fun toString(): String = (0 until height).joinToString(separator = "\n") { c ->
+        (0 until width).map { r -> this[r, c] ?: ' ' }.joinToString(separator = "")
     }
 }
