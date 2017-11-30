@@ -1,9 +1,9 @@
+import org.amshove.kluent.shouldBeFalse
+import org.amshove.kluent.shouldBeTrue
+import org.amshove.kluent.shouldEqual
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 object TileSpec : Spek({
     describe("a tile") {
@@ -14,20 +14,20 @@ object TileSpec : Spek({
         val flipTile = twoTile.reflectLR
 
         it("should have consistent dimensions") {
-            assertEquals(2, twoTile.size)
-            assertEquals(2, twoTile.width)
-            assertEquals(1, twoTile.height)
-            assertEquals(2 to 1, twoTile.dims)
+            twoTile.size shouldEqual 2
+            twoTile.width shouldEqual 2
+            twoTile.height shouldEqual 1
+            twoTile.dims shouldEqual (2 to 1)
         }
 
         it("should print itself neatly") {
-            assertEquals("ab", twoTile.toString())
+            twoTile.toString() shouldEqual "ab"
         }
 
         it("should reflect along the vertical axis") {
-            assertEquals(twoTile.dims, flipTile.dims)
-            assertEquals(twoTile[1, 0], flipTile[0, 0])
-            assertEquals(twoTile[0, 0], flipTile[1, 0])
+            twoTile.dims shouldEqual flipTile.dims
+            twoTile[1, 0] shouldEqual flipTile[0, 0]
+            twoTile[0, 0] shouldEqual flipTile[1, 0]
         }
 
         it("should fit on a board") {
@@ -38,11 +38,11 @@ object TileSpec : Spek({
                 1 to 1 to 'a'
             ))
 
-            assertTrue(twoTile.fitAt(board, 0, 0))
-            assertFalse(twoTile.fitAt(board, 0, 1))
+            twoTile.fitAt(board, 0, 0).shouldBeTrue()
+            twoTile.fitAt(board, 0, 1).shouldBeFalse()
 
-            assertFalse(flipTile.fitAt(board, 0, 0))
-            assertTrue(flipTile.fitAt(board, 0, 1))
+            flipTile.fitAt(board, 0, 0).shouldBeFalse()
+            flipTile.fitAt(board, 0, 1).shouldBeTrue()
         }
     }
 })

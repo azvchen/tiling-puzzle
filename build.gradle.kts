@@ -29,6 +29,7 @@ val kotlin_version: String by extra
 
 repositories {
 	mavenCentral()
+    jcenter()
 }
 
 configure<JUnitPlatformExtension> {
@@ -55,6 +56,11 @@ dependencies {
         exclude(group="org.junit.platform")
         exclude(group="org.jetbrains.kotlin")
     }
+
+    // kluent things
+    testCompile("junit", "junit", "4.12")
+    testCompile("com.nhaarman", "mockito-kotlin-kt1.1", "1.5.+")
+    testCompile("org.amshove.kluent:kluent:1.31")
 }
 
 configure<JavaPluginConvention> {
