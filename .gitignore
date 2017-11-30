@@ -68,7 +68,7 @@ Temporary Items
 .idea/**/uiDesigner.xml
 
 # Gradle:
-.idea/**/gradle.xml
+#.idea/**/gradle.xml
 .idea/**/libraries
 
 # CMake
