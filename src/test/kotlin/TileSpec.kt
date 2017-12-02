@@ -1,6 +1,4 @@
-import org.amshove.kluent.shouldBeFalse
-import org.amshove.kluent.shouldBeTrue
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.*
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
@@ -12,6 +10,12 @@ object TileSpec : Spek({
             1 to 0 to 'b'
         ))
         val flipTile = twoTile.reflectLR
+
+        it("should be empty by default") {
+            val emptyTile = Tile()
+            emptyTile.size shouldEqual 0
+            emptyTile.dims shouldEqual (0 to 0)
+        }
 
         it("should have consistent dimensions") {
             twoTile.size shouldEqual 2
