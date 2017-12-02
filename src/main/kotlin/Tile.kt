@@ -6,6 +6,9 @@ class Tile(private val squares: Map<Pair<Int, Int>, Color> = mapOf()) {
     val height = squares.keys.map { it.second } .max() ?.plus(1) ?: 0
     val dims = width to height
 
+    override fun equals(other: Any?): Boolean = other is Tile && squares == other.squares
+    override fun hashCode(): Int = squares.hashCode()
+
     operator fun get(x: Int, y: Int): Color? = squares[x to y]
 
     fun without(tile: Tile, x: Int, y: Int): Tile = Tile(squares.filter { (pos, _) ->

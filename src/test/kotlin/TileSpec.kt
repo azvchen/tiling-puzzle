@@ -24,6 +24,11 @@ object TileSpec : Spek({
             twoTile.dims shouldEqual (2 to 1)
         }
 
+        it("should have structural equality") {
+            twoTile shouldEqual twoTile
+            twoTile shouldEqual twoTile.reflectLR.reflectLR
+        }
+
         it("should print itself neatly") {
             twoTile.toString() shouldEqual "ab"
         }
