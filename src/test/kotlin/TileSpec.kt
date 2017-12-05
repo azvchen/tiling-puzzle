@@ -54,4 +54,16 @@ object TileSpec : Spek({
             flipTile.fitAt(board, 0, 1).shouldBeTrue()
         }
     }
+
+    describe("the flush algorithm") {
+        it("should do nothing if the squares are already flush") {
+            val squares = mapOf(0 to 0 to 'a', 1 to 0 to 'b')
+            flush(squares) shouldEqual squares
+        }
+
+        it("should translate the tile such that the min row and col are 0") {
+            val squares = mapOf(1 to 0 to 'b')
+            flush(squares) shouldEqual mapOf(0 to 0 to 'b')
+        }
+    }
 })

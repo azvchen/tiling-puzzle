@@ -1,6 +1,12 @@
 typealias Color = Char
+typealias Pos = Pair<Int, Int>
 
-class Tile(private val squares: Map<Pair<Int, Int>, Color> = mapOf()) {
+class Tile(_squares: Map<Pos, Color> = mapOf()) {
+    companion object {
+        @JvmField val blank = ' '
+    }
+
+    private val squares = flush(_squares.filterValues { it != blank })
     val size = squares.size
     val width = squares.keys.map { it.first } .max() ?.plus(1) ?: 0
     val height = squares.keys.map { it.second } .max() ?.plus(1) ?: 0
@@ -25,6 +31,12 @@ class Tile(private val squares: Map<Pair<Int, Int>, Color> = mapOf()) {
     }
 
     override fun toString(): String = (0 until height).joinToString(separator = "\n") { c ->
-        (0 until width).map { r -> this[r, c] ?: ' ' }.joinToString(separator = "")
+        (0 until width).map { r -> this[r, c] ?: blank }.joinToString(separator = "")
     }
+}
+
+fun flush(squares: Map<Pos, Color>): Map<Pos, Color> {
+    val minRow = squares.keys.map { it.first } .min() ?: 0
+    val minCol = squares.keys.map { it.second } .min() ?: 0
+    return squares.mapKeys { (pos, _) -> pos.first - minRow to pos.second - minCol }
 }
