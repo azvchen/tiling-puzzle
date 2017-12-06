@@ -39,6 +39,16 @@ object TileSpec : Spek({
             twoTile[0, 0] shouldEqual flipTile[1, 0]
         }
 
+        it("should have 8 transformations in the general case") {
+            val tile = Tile(mapOf(0 to 0 to 'a', 1 to 0 to 'b', 0 to 1 to 'c', 1 to 1 to 'd'))
+            tile.transformations.size shouldEqual 8
+        }
+
+        it("should have fewer than 8 transformations when symmetric") {
+            val tile = Tile(mapOf(0 to 0 to 'a', 1 to 0 to 'a', 0 to 1 to 'b', 1 to 1 to 'b'))
+            tile.transformations.size shouldEqual 4
+        }
+
         it("should fit on a board") {
             val board = Tile(mapOf(
                 0 to 0 to 'a',

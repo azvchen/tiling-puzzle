@@ -26,8 +26,28 @@ class Tile(_squares: Map<Pos, Color> = mapOf()) {
     }
 
     val reflectLR: Tile by lazy {
-        val newSquares = squares.map { (pos, color) -> width - pos.first - 1 to pos.second to color }.toMap()
-        Tile(newSquares)
+        Tile(squares.mapKeys { (pos, _) -> width - pos.first - 1 to pos.second })
+    }
+
+    val reflectUD: Tile by lazy {
+        Tile(squares.mapKeys { (pos, _) -> pos.first to height - pos.second - 1 })
+    }
+
+    val reflectPrim: Tile by lazy {
+        Tile(squares.mapKeys { (pos, _) -> pos.second to pos.first })
+    }
+
+    val reflectOff: Tile by lazy { this.rotateAbout.reflectPrim }
+
+    val rotateAbout: Tile by lazy { this.reflectLR.reflectUD }
+
+    val rotateLeft: Tile by lazy { this.reflectPrim.reflectUD }
+
+    val rotateRight: Tile by lazy { this.reflectPrim.reflectLR }
+
+    val transformations: List<Tile> by lazy {
+        listOf(this, reflectLR, reflectUD, reflectPrim, reflectOff, rotateAbout, rotateLeft, rotateRight)
+            .distinct()
     }
 
     override fun toString(): String = (0 until height).joinToString(separator = "\n") { c ->

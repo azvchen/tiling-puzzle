@@ -1,6 +1,6 @@
 fun solve(tiles: List<Tile>): Boolean { // what should the return type be
     val board = tiles.maxBy { it.size } ?: throw IllegalStateException("tiles should be nonempty")
-    val pieces = tiles.filter { it != board }
+    val pieces = tiles.filter { it !== board }
 
     // preliminary logic
     if (board.size != pieces.map { it.size } .sum()) {
