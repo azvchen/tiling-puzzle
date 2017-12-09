@@ -1,0 +1,9 @@
+#grid {
+  background-color: gray;
+}
+
+.cell {
+  width: 2rem;
+  height: 2rem;
+  text-align: center;
+}
