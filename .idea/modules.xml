@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/tiling-puzzle.iml" filepath="$PROJECT_DIR$/.idea/modules/tiling-puzzle.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/tiling-puzzle_main.iml" filepath="$PROJECT_DIR$/.idea/modules/tiling-puzzle_main.iml" group="tiling-puzzle" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/tiling-puzzle_test.iml" filepath="$PROJECT_DIR$/.idea/modules/tiling-puzzle_test.iml" group="tiling-puzzle" />
+      <module fileurl="file://$PROJECT_DIR$/ui/ui.iml" filepath="$PROJECT_DIR$/ui/ui.iml" />
     </modules>
   </component>
 </project>
