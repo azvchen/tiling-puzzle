@@ -37,7 +37,7 @@ fun findTile(grid: Tile, visited: MutableSet<Pos>, row: Int, col: Int): Tile {
         visited.add(r to c)
 
         val color = grid[r, c]
-        if (color != null && color != Tile.blank) {
+        if (color != null) {
             squares[r to c] = color
             queue.addAll(listOf(r-1 to c, r+1 to c, r to c-1, r to c+1))
         }

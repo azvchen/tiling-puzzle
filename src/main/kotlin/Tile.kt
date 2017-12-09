@@ -45,6 +45,10 @@ class Tile(_squares: Map<Pos, Color> = mapOf()) {
 
     val rotateRight: Tile by lazy { this.reflectPrim.reflectLR }
 
+    val rotations: List<Tile> by lazy {
+        listOf(this, rotateAbout, rotateLeft, rotateRight)
+    }
+
     val transformations: List<Tile> by lazy {
         listOf(this, reflectLR, reflectUD, reflectPrim, reflectOff, rotateAbout, rotateLeft, rotateRight)
             .distinct()
