@@ -6,7 +6,7 @@ fun textInput(text: String): List<Tile> {
     val visited = mutableSetOf<Pos>()
     for (r in 0 until grid.width) {
         for (c in 0 until grid.height) {
-            if (r to c !in visited && grid[r, c] != Tile.blank) {
+            if (r to c !in visited && grid[r, c] != null && grid[r, c] != Tile.blank) {
                 tiles.add(findTile(grid, visited, r, c))
             }
         }

@@ -47,11 +47,12 @@ object TextInputSpec : Spek({
 
         it("should work in a simple case") {
             val text = listOf(
-                "aa ",
-                "a c",
-                "b c"
+                " aa    ",
+                " a   c   ",
+                " b   c   "
             ).joinToString("\n")
             val tiles = textInput(text)
+            tiles.size shouldEqual 2
             tiles shouldEqual listOf(
                 Tile(mapOf(0 to 0 to 'a', 1 to 0 to 'a', 0 to 1 to 'a', 0 to 2 to 'b')),
                 Tile(mapOf(0 to 0 to 'c', 0 to 1 to 'c'))
