@@ -1,15 +1,26 @@
 // @flow
 
-import React from 'react';
-import settings from '../settings';
-import './styles.css';
 import type { SettingType } from '../settings';
+import settings from '../settings';
+import React from 'react';
+import {
+  Button,
+  FormControlLabel,
+  FormGroup,
+  IconButton,
+  Input,
+  Snackbar,
+  Switch,
+} from 'material-ui';
+import './styles.css';
 
 type Props = {
   settings: settings,
 };
 
-type State = settings;
+type State = settings & {
+  snackbarOpen: boolean,
+};
 
 type Inputs = 'checkbox' | 'number' | 'file';
 
@@ -19,25 +30,23 @@ const typeMap: Map<string, Inputs> = new Map([
   ['object', 'file'],
 ]);
 
-function Option({ name, value, onChange }) {
+function Option({ name, value, onChange }): Switch | Input {
   const inputType = typeMap.get(typeof value);
-  // error, type not supported
-  if (!inputType) return this;
-  const inputId = `id-label-${name}`;
-  return (
-    <React.Fragment>
-      <label htmlFor={inputId}>
-        {name}
-        {inputType === 'file' && <br />}
-        <input
-          id={inputId}
-          type={inputType}
-          checked={value}
-          onChange={onChange}
+  switch (inputType) {
+    case 'checkbox':
+      return (
+        <FormControlLabel
+          control={<Switch checked={value} onChange={onChange} value={name} />}
+          label={name}
         />
-      </label>
-    </React.Fragment>
-  );
+      );
+    case 'number':
+    case 'file':
+      return <Input type={inputType} onChange={onChange} />;
+    default:
+      // error, type not supported
+      return this;
+  }
 }
 
 class Sidebar extends React.Component<Props, State> {
@@ -49,23 +58,49 @@ class Sidebar extends React.Component<Props, State> {
     }
     console.log(this.state);
   }
+
   render() {
-    let settings = this.state;
+    let { snackbarOpen, ...settings } = this.state;
+    const closeSnackbar = () => this.setState({ snackbarOpen: false });
+
     return (
       <form className="sidebar">
         <h1>Settings</h1>
-        {Object.entries(settings).map(([key, value]) => (
-          <Option
-            key={key}
-            name={key}
-            value={value}
-            onChange={e => this._onChange(key, e.target)}
-          />
-        ))}
-        <button>Save</button>
+        <FormGroup>
+          {Object.entries(settings).map(([key, value]) => (
+            <Option
+              key={key}
+              name={key}
+              value={value}
+              onChange={e => this._onChange(key, e.target)}
+            />
+          ))}
+        </FormGroup>
+        <Button onClick={() => this._submit()}>Save</Button>
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          autoHideDuration={6000}
+          open={snackbarOpen}
+          onRequestClose={closeSnackbar}
+          SnackbarContentProps={{
+            'aria-describedby': 'message-id',
+          }}
+          message={<span id="message-id">Saved.</span>}
+          action={[
+            <IconButton
+              key="close"
+              aria-label="Close"
+              color="inherit"
+              onClick={closeSnackbar}
+            >
+              close
+            </IconButton>,
+          ]}
+        />
       </form>
     );
   }
+
   _onChange(key, target) {
     const type = typeof this.state[key];
     let newValue: SettingType;
@@ -84,6 +119,12 @@ class Sidebar extends React.Component<Props, State> {
     }
     this.setState({
       [key]: newValue,
+    });
+  }
+
+  _submit() {
+    this.setState({
+      snackbarOpen: true,
     });
   }
 }
