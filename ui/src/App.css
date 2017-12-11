@@ -1,0 +1,19 @@
+.App {
+  display: flex;
+  height: 100vh;
+  font-family: 'Roboto', sans-serif;
+}
+
+.grid-view {
+  display: flex;
+  flex-grow: 1;
+  padding: 2rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-view {
+  padding: 0 1rem;
+  background-color: lightgray;
+  height: 100%;
+}
