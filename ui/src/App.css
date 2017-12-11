@@ -10,3 +10,9 @@
   align-items: center;
   justify-content: center;
 }
+
+.sidebar-view {
+  padding: 0 1rem;
+  background-color: lightgray;
+  height: 100%;
+}
