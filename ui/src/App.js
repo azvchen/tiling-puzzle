@@ -1,6 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
+import { IconButton, Snackbar } from 'material-ui';
 import Grid from './Grid';
 import Sidebar from './Sidebar';
 import settings from './settings';
@@ -23,22 +24,46 @@ export class Board {
 type Props = {};
 
 type State = {
+  snackbarMessage: string,
+  snackbarOpen: boolean,
   socket: WebSocket,
 };
+
+function createSocket(
+  component: Component,
+  setState: State => void,
+): WebSocket {
+  const socket = new WebSocket('ws://localhost:8080/ws');
+  socket.addEventListener('open', () => {
+    console.log('connected');
+    setState({ snackbarOpen: true, snackbarMessage: 'Connected' });
+  });
+  socket.addEventListener('close', () => {
+    const closeMessage = 'Connection lost, retrying...';
+    console.warn('connection lost');
+    if (component.state.snackbarMessage !== closeMessage) {
+      setState({ snackbarOpen: true, snackbarMessage: closeMessage });
+    }
+    setTimeout(() => {
+      setState({ socket: createSocket(component, setState) });
+    }, 1000);
+  });
+  socket.addEventListener('message', e => console.log(e.data));
+}
 
 class App extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      socket: new WebSocket('ws://localhost:8080/ws'),
+      socket: createSocket(this, this.setState.bind(this)),
+      snackbarOpen: false,
     };
-    this.state.socket.addEventListener('open', () => console.log('connected'));
-    this.state.socket.addEventListener('close', () =>
-      console.warn('connection lost'),
-    );
-    this.state.socket.addEventListener('message', e => console.log(e.data));
   }
+
   render() {
+    let { snackbarMessage, snackbarOpen } = this.state;
+    const closeSnackbar = () => this.setState({ snackbarOpen: false });
+
     return (
       <div className="App">
         <section className="grid-view">
@@ -66,6 +91,26 @@ class App extends Component<Props, State> {
             onSubmit={() => this._onSubmit()}
           />
         </section>
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          autoHideDuration={6000}
+          open={snackbarOpen}
+          onRequestClose={closeSnackbar}
+          SnackbarContentProps={{
+            'aria-describedby': 'message-id',
+          }}
+          message={<span id="message-id">{snackbarMessage}</span>}
+          action={[
+            <IconButton
+              key="close"
+              aria-label="Close"
+              color="inherit"
+              onClick={closeSnackbar}
+            >
+              close
+            </IconButton>,
+          ]}
+        />
       </div>
     );
   }
