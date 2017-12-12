@@ -55,6 +55,8 @@ dependencies {
     compile("io.ktor", "ktor-server-netty", "0.9.0")
     compile("io.ktor", "ktor-websockets", "0.9.0")
 
+    compile("com.squareup.moshi", "moshi-kotlin", "1.5.0")
+
     testRuntime(kotlinModule("runtime", kotlin_version))
 	testCompile(kotlinModule("test", kotlin_version))
     testCompile(kotlinModule("reflect", kotlin_version))

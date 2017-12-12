@@ -1,4 +1,6 @@
 package server
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
@@ -18,6 +20,9 @@ import java.time.Duration
 
 private val server = SolutionServer()
 
+private var moshi = Moshi.Builder().build()
+private var settingsAdapter: JsonAdapter<SolveSettings> = moshi.adapter(SolveSettings::class.java)
+
 fun Application.main() {
     install(DefaultHeaders)
     install(CallLogging)
@@ -29,18 +34,18 @@ fun Application.main() {
     }
     install(Routing) {
         install(Sessions) {
-            cookie<SolveSession>("SESSION")
+            cookie<Session>("SESSION")
         }
         intercept(ApplicationCallPipeline.Infrastructure) {
-            if (call.sessions.get<SolveSession>() == null) {
-                call.sessions.set(SolveSession(nextNonce()))
+            if (call.sessions.get<Session>() == null) {
+                call.sessions.set(nextNonce())
             }
         }
         get("/") {
             call.respondText("Hello!", ContentType.Text.Html)
         }
         webSocket("/ws") {
-            val session = call.sessions.get<SolveSession>()
+            val session = call.sessions.get<Session>()
             if (session == null) {
                 close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "No session"))
                 return@webSocket
@@ -61,13 +66,18 @@ fun Application.main() {
     }
 }
 
-data class SolveSession(val id: String)
+data class Session(val id: String)
 
 private suspend fun receivedMessage(id: String, command: String) {
     when {
-        command.startsWith("solve ") -> {
-            val puzzle = command.removePrefix("solve ")
-            server.startSolve(id, puzzle)
+        command.startsWith("settings") -> {
+            println(command)
+            val settings = settingsAdapter.fromJson(command.removePrefix("settings").trim()) ?: SolveSettings()
+            server[id] = server[id].copy(settings = settings)
         }
+        command.startsWith("solve") -> {
+            server[id].startSolve()
+        }
+        else -> server[id].send("Unknown command!")
     }
 }

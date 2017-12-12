@@ -57,10 +57,28 @@ class App extends Component<Props, State> {
           />
         </section>
         <section className="sidebar-view">
-          <Sidebar settings={settings} />
+          <Sidebar
+            settings={settings}
+            onSave={settings => this._onSave(settings)}
+            onSubmit={() => this._onSubmit()}
+          />
         </section>
       </div>
     );
+  }
+
+  _onSave(settings: settings) {
+    const serverSettings = { ...settings };
+    const reader = new FileReader();
+    reader.onload = event => {
+      serverSettings.puzzle = event.target.result;
+      this.state.socket.send(`settings ${JSON.stringify(serverSettings)}`);
+    };
+    reader.readAsText(settings.puzzle);
+  }
+
+  _onSubmit() {
+    this.state.socket.send('solve');
   }
 }
 
