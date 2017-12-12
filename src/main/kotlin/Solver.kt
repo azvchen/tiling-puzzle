@@ -1,9 +1,10 @@
 import io.reactivex.subjects.PublishSubject
 
 typealias Solution = Map<Pos, Tile>
+fun List<Tile>.board(): Tile = this.maxBy { it.size } ?: throw IllegalStateException("need at least one tile")
 
 class Solver(tiles: List<Tile>, reflect: Boolean = false) {
-    val board = tiles.maxBy { it.size } ?: throw IllegalStateException("need at least one tile")
+    val board = tiles.board()
     val pieces = tiles.filter { it !== board }.sortedByDescending { it.size }
     val transformFunc = if (reflect) Tile::transformations else Tile::rotations
     val transforms = pieces.map(transformFunc)

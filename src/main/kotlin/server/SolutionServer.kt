@@ -2,6 +2,7 @@ package server
 
 import Solver
 import Tile
+import board
 import com.squareup.moshi.Types
 import io.ktor.util.ByteBufferBuilder
 import io.ktor.websocket.Frame
@@ -10,9 +11,10 @@ import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.io.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 
-private val pair = Types.newParameterizedType(Pair::class.java, Integer::class.java, Integer::class.java)
-private val type = Types.newParameterizedType(Map::class.java, pair, Tile::class.java)
-private val adapter = moshi.adapter<Map<Pair<Int, Int>, Tile>>(type)
+private val pairType = Types.newParameterizedType(Pair::class.java, Integer::class.java, Integer::class.java)
+private val mapType = Types.newParameterizedType(Map::class.java, pairType, Tile::class.java)
+private val solutionAdapter = moshi.adapter<Map<Pair<Int, Int>, Tile>>(mapType)
+private val tileAdapter = moshi.adapter(Tile::class.java)
 
 class SolutionServer {
     private val listeners = ConcurrentHashMap<String, SolveSession>()
@@ -21,12 +23,13 @@ class SolutionServer {
     operator fun set(id: String, session: SolveSession) {
         listeners[id] = session
         async {
-            session.send("settings received")
+            session.sendBoard()
         }
     }
 
     suspend fun createOrRecoverSession(sessionId: String, socket: WebSocketSession) {
-        listeners.putIfAbsent(sessionId, SolveSession(id = sessionId, socket = socket))
+        val listener = listeners.getOrPut(sessionId) { SolveSession(id = sessionId, socket = socket) }
+        listener.sendBoard()
     }
 
     suspend fun sessionClosed(sessionId: String, socket: WebSocketSession) {
@@ -45,31 +48,38 @@ data class SolveSession(
     val settings: SolveSettings = SolveSettings(),
     val socket: WebSocketSession
 ) {
+    suspend fun sendBoard() {
+        if (settings.tiles.isNotEmpty()) {
+            val board = settings.tiles.board()
+            message("board", board.width.toString(), board.height.toString(), tileAdapter.toJson(board))
+        } else {
+            message("board")
+        }
+    }
+
     suspend fun startSolve() {
         send("solving")
         val solver = Solver(settings.tiles)
         solver.observable.subscribe { solution ->
-            println(solution)
-            var serializedSolution = ""
-            try {
-                serializedSolution = adapter.toJson(solution)
-            } catch (e: Exception) {
-                println(e)
-            }
-            println(serializedSolution)
             async {
-                send(serializedSolution)
+                message("solution", solutionAdapter.toJson(solution))
             }
         }
         async {
             solver.solve()
         }
     }
+
+    suspend fun message(vararg payload: String) {
+        send(payload.joinToString("$#@%"))
+    }
+
     suspend fun send(message: String) {
         send(ByteBufferBuilder.build {
             putString(message, Charsets.UTF_8)
         })
     }
+
     private suspend fun send(serialized: ByteBuffer) {
         socket.send(Frame.Text(true, serialized.duplicate()))
     }
