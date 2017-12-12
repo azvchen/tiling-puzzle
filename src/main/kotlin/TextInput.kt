@@ -2,11 +2,15 @@ import java.util.*
 
 fun textInput(text: String): List<Tile> {
     val grid = textToTile(text)
+    return findTiles(grid)
+}
+
+fun findTiles(grid: Tile): List<Tile> {
     val tiles = mutableListOf<Tile>()
     val visited = mutableSetOf<Pos>()
     for (r in 0 until grid.width) {
         for (c in 0 until grid.height) {
-            if (r to c !in visited && grid[r, c] != null && grid[r, c] != Tile.blank) {
+            if (r to c !in visited && grid[r, c] != null) {
                 tiles.add(findTile(grid, visited, r, c))
             }
         }
