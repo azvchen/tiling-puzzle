@@ -19,7 +19,7 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false, private val log: (Solu
     fun logSolution(placed: Solution) {
         if (placed !in solutions) {
             solutions.add(placed)
-//            onSolution.onNext(placed)
+            onSolution.onNext(placed)
             log(placed, solutions.size)
         }
     }

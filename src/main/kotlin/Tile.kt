@@ -1,7 +1,7 @@
 typealias Color = Char
 typealias Pos = Pair<Int, Int>
 
-class Tile(_squares: Map<Pos, Color> = mapOf()) {
+class Tile(_squares: Map<Pos, Color> = mapOf(), pad: Boolean = false) {
     companion object {
         @JvmField val blank = ' '
     }
@@ -23,7 +23,7 @@ class Tile(_squares: Map<Pos, Color> = mapOf()) {
         }
     }
 
-    private val squares = flush(_squares.filterValues { it != blank })
+    private val squares = normalize(_squares.filterValues { it != blank }, pad)
     val size = squares.size
     val width = squares.keys.map { it.first } .max() ?.plus(1) ?: 0
     val height = squares.keys.map { it.second } .max() ?.plus(1) ?: 0
@@ -34,9 +34,10 @@ class Tile(_squares: Map<Pos, Color> = mapOf()) {
 
     operator fun get(x: Int, y: Int): Color? = squares[x to y]
 
-    fun without(tile: Tile, x: Int, y: Int): Tile = Tile(squares.filter { (pos, _) ->
-        (pos.first - x to pos.second - y) !in tile.squares
-    })
+    fun without(tile: Tile, x: Int, y: Int): Tile = Tile(
+        squares.filter { (pos, _) -> (pos.first - x to pos.second - y) !in tile.squares },
+        pad = true
+    )
 
     fun fitAt(board: Tile, x: Int, y: Int): Boolean = squares.all { (pos, color) ->
         color == board[x + pos.first, y + pos.second]
@@ -63,7 +64,7 @@ class Tile(_squares: Map<Pos, Color> = mapOf()) {
     val rotateRight: Tile by lazy { this.reflectPrim.reflectLR }
 
     val rotations: List<Tile> by lazy {
-        listOf(this, rotateAbout, rotateLeft, rotateRight)
+        listOf(this, rotateAbout, rotateLeft, rotateRight).distinct()
     }
 
     val transformations: List<Tile> by lazy {
@@ -71,12 +72,20 @@ class Tile(_squares: Map<Pos, Color> = mapOf()) {
             .distinct()
     }
 
-    override fun toString(): String = (0 until height).joinToString(separator = "\n") { c ->
-        (0 until width).map { r -> this[r, c] ?: blank }.joinToString(separator = "")
+    fun copy(): Tile {
+        return Tile(squares)
+    }
+
+    override fun toString(): String = (0 until height).joinToString(separator = "\n") { r ->
+        (0 until width).map { c -> this[c, r] ?: blank }.joinToString(separator = "")
     }
 }
 
-fun flush(squares: Map<Pos, Color>): Map<Pos, Color> {
+fun normalize(rawSquares: Map<Pos, Color>, pad: Boolean = false): Map<Pos, Color> {
+    val squares = rawSquares.filterValues { it != Tile.blank }
+    if (pad) {
+        return squares
+    }
     val minRow = squares.keys.map { it.first } .min() ?: 0
     val minCol = squares.keys.map { it.second } .min() ?: 0
     return squares.mapKeys { (pos, _) -> pos.first - minRow to pos.second - minCol }
