@@ -1,12 +1,18 @@
 package server
 
 import Solver
+import Tile
+import com.squareup.moshi.Types
 import io.ktor.util.ByteBufferBuilder
 import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.io.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
+
+private val pair = Types.newParameterizedType(Pair::class.java, Integer::class.java, Integer::class.java)
+private val type = Types.newParameterizedType(Map::class.java, pair, Tile::class.java)
+private val adapter = moshi.adapter<Map<Pair<Int, Int>, Tile>>(type)
 
 class SolutionServer {
     private val listeners = ConcurrentHashMap<String, SolveSession>()
@@ -15,7 +21,7 @@ class SolutionServer {
     operator fun set(id: String, session: SolveSession) {
         listeners[id] = session
         async {
-            session.send("success")
+            session.send("settings received")
         }
     }
 
@@ -41,7 +47,23 @@ data class SolveSession(
 ) {
     suspend fun startSolve() {
         send("solving")
-        Solver(settings.tiles).solve()
+        val solver = Solver(settings.tiles)
+        solver.observable.subscribe { solution ->
+            println(solution)
+            var serializedSolution = ""
+            try {
+                serializedSolution = adapter.toJson(solution)
+            } catch (e: Exception) {
+                println(e)
+            }
+            println(serializedSolution)
+            async {
+                send(serializedSolution)
+            }
+        }
+        async {
+            solver.solve()
+        }
     }
     suspend fun send(message: String) {
         send(ByteBufferBuilder.build {

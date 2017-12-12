@@ -20,7 +20,10 @@ import java.time.Duration
 
 private val server = SolutionServer()
 
-private var moshi = Moshi.Builder().build()
+var moshi = Moshi.Builder()
+    .add(TileAdapter())
+    .add(PairAdapter())
+    .build()
 private var settingsAdapter: JsonAdapter<SolveSettings> = moshi.adapter(SolveSettings::class.java)
 
 fun Application.main() {
@@ -71,7 +74,6 @@ data class Session(val id: String)
 private suspend fun receivedMessage(id: String, command: String) {
     when {
         command.startsWith("settings") -> {
-            println(command)
             val settings = settingsAdapter.fromJson(command.removePrefix("settings").trim()) ?: SolveSettings()
             server[id] = server[id].copy(settings = settings)
         }

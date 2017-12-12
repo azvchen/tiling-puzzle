@@ -1,3 +1,5 @@
+import io.reactivex.subjects.PublishSubject
+
 typealias Solution = Map<Pos, Tile>
 
 class Solver(tiles: List<Tile>, reflect: Boolean = false) {
@@ -10,9 +12,13 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false) {
 
     val solutions = mutableSetOf<Solution>()
 
+    private val onSolution = PublishSubject.create<Solution>()
+    val observable get() = onSolution
+
     fun logSolution(placed: Solution) {
         if (placed !in solutions) {
             solutions.add(placed)
+            onSolution.onNext(placed)
             println("Solution ${solutions.size}")
             printPlacedTiles(placed)
         }
