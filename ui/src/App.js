@@ -1,5 +1,4 @@
 // @flow
-
 import React, { Component } from 'react';
 import { IconButton, Snackbar } from 'material-ui';
 import Grid from './Grid';
@@ -20,6 +19,17 @@ export class Board {
     this.squares = squares;
   }
 }
+
+export class Tile extends Board {
+  position: Coord;
+
+  constructor(board: Board, position: Coord) {
+    super(board.width, board.height, board.squares);
+    this.position = position;
+  }
+}
+
+type Solution = Tile[];
 
 type Props = {};
 
@@ -70,13 +80,7 @@ class App extends Component<Props, State> {
           <Grid board={board} />
         </section>
         <section className="grid-view">
-          <Grid
-            board={{
-              width: 2,
-              height: 2,
-              squares: new Map([[[0, 0], 'X'], [[1, 1], 'O']]),
-            }}
-          />
+          <Grid board={board} />
         </section>
         <section className="sidebar-view">
           <Sidebar
@@ -109,30 +113,52 @@ class App extends Component<Props, State> {
     );
   }
 
-  handleMessage(message: String) {
-    // console.log(message);
-    switch (message.split('$#@%')[0]) {
+  handleMessage(message: string) {
+    const delimiterIndex = message.indexOf(' ');
+    let command = message.slice(0, delimiterIndex);
+    let data = message.slice(delimiterIndex + 1);
+    if (delimiterIndex === -1) {
+      command = data;
+      data = null;
+    }
+    console.log(command, data);
+    switch (command) {
       case 'board':
-        this.updateBoard(message);
+        this.updateBoard(data);
+        break;
+      case 'solution':
+        this.addSolution(data);
         break;
     }
   }
 
-  updateBoard(boardString: String) {
-    const [, width, height, board] = boardString.split('$#@%');
-    if (width === undefined) {
-      // clear board
-      return;
+  updateBoard(boardString: string) {
+    const board = this.stringToBoard(JSON.parse(boardString));
+    this.setState({ board });
+  }
+
+  addSolution(serializedSolutions: string) {
+    const solution: Solution = [];
+    for (const [position, board] of Object.entries(
+      JSON.parse(serializedSolutions),
+    )) {
+      solution.push(new Tile(board, position));
     }
-    const squares = new Map();
-    const lines = board.split('\n');
-    for (const i in lines) {
-      const line = lines[i];
-      for (const j in line) {
-        squares.set([i, j], line[j]);
-      }
+    this.setState({ solutions: this.state.solutions.concat([solution]) });
+  }
+
+  stringToBoard(
+    serialized: ?{ width: number, height: number, squares: any },
+  ): Board {
+    if (!serialized) {
+      return new Board(0, 0, new Map());
     }
-    this.setState({ board: new Board(+width, +height, squares) });
+    const { width, height, squares } = serialized;
+    const squareMap = new Map();
+    for (const [position, color] of Object.entries(squares)) {
+      squareMap.set(position.split(' '), color);
+    }
+    return new Board(width, height, squareMap);
   }
 
   _onSave(settings: settings) {

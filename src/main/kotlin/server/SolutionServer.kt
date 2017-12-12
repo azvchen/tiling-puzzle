@@ -51,9 +51,9 @@ data class SolveSession(
     suspend fun sendBoard() {
         if (settings.tiles.isNotEmpty()) {
             val board = settings.tiles.board()
-            message("board", board.width.toString(), board.height.toString(), board.toString())
+            message("board", tileAdapter.toJson(board))
         } else {
-            message("board")
+            send("board")
         }
     }
 
@@ -70,8 +70,8 @@ data class SolveSession(
         }
     }
 
-    suspend fun message(vararg payload: String) {
-        send(payload.joinToString("$#@%"))
+    suspend fun message(command: String, payload: String) {
+        send("$command $payload")
     }
 
     suspend fun send(message: String) {

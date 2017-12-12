@@ -7,10 +7,12 @@ import textToTile
 
 
 class TileAdapter {
+
     @ToJson
-    fun toJson(tile: Tile): String {
-        return tile.toString()
+    fun toJson(tile: Tile): Tile.SerializableTile {
+        return Tile.SerializableTile.fromTile(tile)
     }
+
     @FromJson
     fun fromJson(json: String): Tile {
         return textToTile(json)

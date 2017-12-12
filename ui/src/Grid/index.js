@@ -1,11 +1,12 @@
 // @flow
 import React from 'react';
 import toMaterialStyle from 'material-color-hash';
-import { Board } from '../App';
+import { Board, Tile } from '../App';
 import './styles.css';
 
 type Props = {
   board: Board,
+  tiles: Tile[],
 };
 
 class Grid extends React.Component<Props> {

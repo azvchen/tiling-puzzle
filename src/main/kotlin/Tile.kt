@@ -5,6 +5,23 @@ class Tile(_squares: Map<Pos, Color> = mapOf()) {
     companion object {
         @JvmField val blank = ' '
     }
+    data class SerializableTile(
+        val squares: Map<Pos, Color>,
+        val size: Int,
+        val width: Int,
+        val height: Int,
+        val dims: Pos
+    ) {
+        companion object {
+            fun fromTile(tile: Tile): SerializableTile = SerializableTile(
+                squares = tile.squares,
+                size = tile.size,
+                width = tile.width,
+                height = tile.height,
+                dims = tile.dims
+            )
+        }
+    }
 
     private val squares = flush(_squares.filterValues { it != blank })
     val size = squares.size
