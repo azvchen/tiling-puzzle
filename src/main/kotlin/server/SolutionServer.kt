@@ -51,7 +51,7 @@ data class SolveSession(
     suspend fun sendBoard() {
         if (settings.tiles.isNotEmpty()) {
             val board = settings.tiles.board()
-            message("board", board.width.toString(), board.height.toString(), tileAdapter.toJson(board))
+            message("board", board.width.toString(), board.height.toString(), board.toString())
         } else {
             message("board")
         }

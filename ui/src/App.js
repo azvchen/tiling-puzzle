@@ -24,31 +24,29 @@ export class Board {
 type Props = {};
 
 type State = {
+  board: Board,
   snackbarMessage: string,
   snackbarOpen: boolean,
   socket: WebSocket,
 };
 
-function createSocket(
-  component: Component,
-  setState: State => void,
-): WebSocket {
+function createSocket(app: App): WebSocket {
   const socket = new WebSocket('ws://localhost:8080/ws');
   socket.addEventListener('open', () => {
     console.log('connected');
-    setState({ snackbarOpen: true, snackbarMessage: 'Connected' });
+    app.setState({ snackbarOpen: true, snackbarMessage: 'Connected' });
   });
   socket.addEventListener('close', () => {
     const closeMessage = 'Connection lost, retrying...';
     console.warn('connection lost');
-    if (component.state.snackbarMessage !== closeMessage) {
-      setState({ snackbarOpen: true, snackbarMessage: closeMessage });
+    if (app.state.snackbarMessage !== closeMessage) {
+      app.setState({ snackbarOpen: true, snackbarMessage: closeMessage });
     }
     setTimeout(() => {
-      setState({ socket: createSocket(component, setState) });
+      app.setState({ socket: createSocket(app) });
     }, 1000);
   });
-  socket.addEventListener('message', e => console.log(e.data));
+  socket.addEventListener('message', e => app.handleMessage(e.data));
   return socket;
 }
 
@@ -56,25 +54,20 @@ class App extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      socket: createSocket(this, this.setState.bind(this)),
+      socket: createSocket(this),
       snackbarOpen: false,
+      board: new Board(0, 0, new Map()),
     };
   }
 
   render() {
-    let { snackbarMessage, snackbarOpen } = this.state;
+    let { board, snackbarMessage, snackbarOpen } = this.state;
     const closeSnackbar = () => this.setState({ snackbarOpen: false });
 
     return (
       <div className="App">
         <section className="grid-view">
-          <Grid
-            board={{
-              width: 2,
-              height: 2,
-              squares: new Map([[[0, 0], 'a'], [[1, 1], 'b']]),
-            }}
-          />
+          <Grid board={board} />
         </section>
         <section className="grid-view">
           <Grid
@@ -114,6 +107,32 @@ class App extends Component<Props, State> {
         />
       </div>
     );
+  }
+
+  handleMessage(message: String) {
+    // console.log(message);
+    switch (message.split('$#@%')[0]) {
+      case 'board':
+        this.updateBoard(message);
+        break;
+    }
+  }
+
+  updateBoard(boardString: String) {
+    const [, width, height, board] = boardString.split('$#@%');
+    if (width === undefined) {
+      // clear board
+      return;
+    }
+    const squares = new Map();
+    const lines = board.split('\n');
+    for (const i in lines) {
+      const line = lines[i];
+      for (const j in line) {
+        squares.set([i, j], line[j]);
+      }
+    }
+    this.setState({ board: new Board(+width, +height, squares) });
   }
 
   _onSave(settings: settings) {
