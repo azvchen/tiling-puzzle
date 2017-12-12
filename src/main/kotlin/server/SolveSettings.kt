@@ -1,5 +1,6 @@
 package server
 
+import Tile
 import textInput
 
 data class SolveSettings(
@@ -7,6 +8,6 @@ data class SolveSettings(
     val rotations: Boolean = true,
     val puzzle: String = ""
 ) {
-    @Transient
-    val tiles = textInput(puzzle)
+    val tiles: List<Tile>
+        get() = textInput(puzzle)
 }

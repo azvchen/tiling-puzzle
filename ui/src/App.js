@@ -33,6 +33,9 @@ class App extends Component<Props, State> {
       socket: new WebSocket('ws://localhost:8080/ws'),
     };
     this.state.socket.addEventListener('open', () => console.log('connected'));
+    this.state.socket.addEventListener('close', () =>
+      console.warn('connection lost'),
+    );
     this.state.socket.addEventListener('message', e => console.log(e.data));
   }
   render() {
