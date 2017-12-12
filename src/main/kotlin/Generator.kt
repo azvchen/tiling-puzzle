@@ -4,17 +4,17 @@ import kotlin.math.*
 private val letter = 'X'
 
 fun generatePuzzle(width: Int, height: Int): List<Tile> {
-    val grid = Tile((0 until width).map { r -> (0 until height).map { c -> r to c to letter }} .flatten() .toMap())
+    val grid = Tile((0 until width).map { c -> (0 until height).map { r -> r to c to letter }} .flatten() .toMap())
     return generatePuzzle(grid)
 }
 
 fun generatePuzzle(grid: Tile): List<Tile> {
     val tiles = mutableListOf<Tile>()
     val selected = mutableSetOf<Pos>()
-    for (r in 0 until grid.width) {
-        for (c in 0 until grid.height) {
-            if (r to c !in selected && grid[r, c] != null) {
-                tiles.add(generateTile(grid, selected, r, c))
+    for (x in 0 until grid.width) {
+        for (y in 0 until grid.height) {
+            if (x to y !in selected && grid[x, y] != null) {
+                tiles.add(generateTile(grid, selected, x, y))
             }
         }
     }
