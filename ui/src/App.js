@@ -49,6 +49,7 @@ function createSocket(
     }, 1000);
   });
   socket.addEventListener('message', e => console.log(e.data));
+  return socket;
 }
 
 class App extends Component<Props, State> {
