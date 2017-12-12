@@ -56,7 +56,6 @@ class Sidebar extends React.Component<Props, State> {
     for (const [key, value] of props.settings.entries()) {
       this.state[key] = value;
     }
-    console.log(this.state);
   }
 
   render() {

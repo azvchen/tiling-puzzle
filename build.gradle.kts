@@ -1,4 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.js.translate.context.Namer.kotlin
 import org.junit.platform.gradle.plugin.EnginesExtension
 import org.junit.platform.gradle.plugin.FiltersExtension
 import org.junit.platform.gradle.plugin.JUnitPlatformExtension
@@ -23,6 +25,11 @@ buildscript {
 apply {
     plugin("org.junit.platform.gradle.plugin")
 	plugin("kotlin")
+    plugin("application")
+}
+
+configure<ApplicationPluginConvention> {
+    mainClassName = "io.ktor.server.netty.DevelopmentEngine"
 }
 
 val kotlin_version: String by extra
@@ -30,6 +37,8 @@ val kotlin_version: String by extra
 repositories {
 	mavenCentral()
     jcenter()
+    maven { setUrl("https://dl.bintray.com/kotlin/ktor") }
+    maven { setUrl("https://dl.bintray.com/kotlin/kotlinx") }
 }
 
 configure<JUnitPlatformExtension> {
@@ -42,6 +51,10 @@ configure<JUnitPlatformExtension> {
 
 dependencies {
 	compile(kotlinModule("stdlib-jdk8", kotlin_version))
+    compile("io.ktor", "ktor-server-core", "0.9.0")
+    compile("io.ktor", "ktor-server-netty", "0.9.0")
+    compile("io.ktor", "ktor-websockets", "0.9.0")
+
     testRuntime(kotlinModule("runtime", kotlin_version))
 	testCompile(kotlinModule("test", kotlin_version))
     testCompile(kotlinModule("reflect", kotlin_version))
@@ -68,6 +81,10 @@ configure<JavaPluginConvention> {
 }
 tasks.withType<KotlinCompile> {
 	kotlinOptions.jvmTarget = "1.8"
+}
+
+configure<org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension> {
+    experimental.coroutines = Coroutines.ENABLE
 }
 
 // extension for configuration
