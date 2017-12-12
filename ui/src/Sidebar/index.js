@@ -16,6 +16,8 @@ import './styles.css';
 
 type Props = {
   settings: settings,
+  onSave: settings => void,
+  onSubmit: () => void,
 };
 
 type State = settings & {
@@ -56,7 +58,6 @@ class Sidebar extends React.Component<Props, State> {
     for (const [key, value] of props.settings.entries()) {
       this.state[key] = value;
     }
-    console.log(this.state);
   }
 
   render() {
@@ -76,7 +77,8 @@ class Sidebar extends React.Component<Props, State> {
             />
           ))}
         </FormGroup>
-        <Button onClick={() => this._submit()}>Save</Button>
+        <Button onClick={() => this._save()}>Save</Button>
+        <Button onClick={() => this._submit()}>Solve</Button>
         <Snackbar
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           autoHideDuration={6000}
@@ -122,10 +124,15 @@ class Sidebar extends React.Component<Props, State> {
     });
   }
 
-  _submit() {
+  _save() {
     this.setState({
       snackbarOpen: true,
     });
+    this.props.onSave(this.state);
+  }
+
+  _submit() {
+    this.props.onSubmit();
   }
 }
 

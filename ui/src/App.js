@@ -20,7 +20,21 @@ export class Board {
   }
 }
 
-class App extends Component {
+type Props = {};
+
+type State = {
+  socket: WebSocket,
+};
+
+class App extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      socket: new WebSocket('ws://localhost:8080/ws'),
+    };
+    this.state.socket.addEventListener('open', () => console.log('connected'));
+    this.state.socket.addEventListener('message', e => console.log(e.data));
+  }
   render() {
     return (
       <div className="App">
@@ -43,10 +57,28 @@ class App extends Component {
           />
         </section>
         <section className="sidebar-view">
-          <Sidebar settings={settings} />
+          <Sidebar
+            settings={settings}
+            onSave={settings => this._onSave(settings)}
+            onSubmit={() => this._onSubmit()}
+          />
         </section>
       </div>
     );
+  }
+
+  _onSave(settings: settings) {
+    const serverSettings = { ...settings };
+    const reader = new FileReader();
+    reader.onload = event => {
+      serverSettings.puzzle = event.target.result;
+      this.state.socket.send(`settings ${JSON.stringify(serverSettings)}`);
+    };
+    reader.readAsText(settings.puzzle);
+  }
+
+  _onSubmit() {
+    this.state.socket.send('solve');
   }
 }
 
