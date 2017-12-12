@@ -57,7 +57,6 @@ dependencies {
 
     compile("com.squareup.moshi", "moshi-kotlin", "1.5.0")
     compile("io.reactivex.rxjava2", "rxjava", "2.1.7")
-    compile("io.reactivex", "rxkotlin", "2.2.0")
 
     testRuntime(kotlinModule("runtime", kotlin_version))
 	testCompile(kotlinModule("test", kotlin_version))
