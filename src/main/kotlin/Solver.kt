@@ -1,3 +1,5 @@
+typealias Solution = Map<Pos, Tile>
+
 class Solver(tiles: List<Tile>, reflect: Boolean = false) {
     val board = tiles.maxBy { it.size } ?: throw IllegalStateException("need at least one tile")
     val pieces = tiles.filter { it !== board }.sortedByDescending { it.size }
@@ -6,9 +8,9 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false) {
 
     val validSizes = allSums(pieces.map { it.size })
 
-    val solutions = mutableSetOf<Map<Pos, Tile>>()
+    val solutions = mutableSetOf<Solution>()
 
-    fun logSolution(placed: Map<Pos, Tile>) {
+    fun logSolution(placed: Solution) {
         if (placed !in solutions) {
             solutions.add(placed)
             println("Solution ${solutions.size}")
@@ -30,7 +32,7 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false) {
         return placePiece(board, syms = symmetries)
     }
 
-    fun placePiece(board: Tile, n: Int = 0, placed: Map<Pos, Tile> = emptyMap(), syms: List<(Tile) -> Tile> = emptyList()): Boolean {
+    fun placePiece(board: Tile, n: Int = 0, placed: Solution = emptyMap(), syms: List<(Tile) -> Tile> = emptyList()): Boolean {
         if (board.size == 0) {
             logSolution(placed)
             return true
@@ -81,7 +83,7 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false) {
     }
 }
 
-fun printPlacedTiles(placed: Map<Pos, Tile>) {
+fun printPlacedTiles(placed: Solution) {
     for ((pos, tile) in placed) {
         println(pos)
         println(tile)
@@ -89,9 +91,9 @@ fun printPlacedTiles(placed: Map<Pos, Tile>) {
 }
 
 fun allSums(ints: List<Int>): Set<Int> {
-    if (ints.isEmpty()) {
-        return setOf(0)
+    val sums = mutableSetOf(0)
+    for (i in ints) {
+        sums += sums.map { it + i }
     }
-    val subSums = allSums(ints.drop(1))
-    return subSums + subSums.map { it + ints[0] }
+    return sums
 }

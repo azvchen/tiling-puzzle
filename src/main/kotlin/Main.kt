@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
         }
         val tiles = textInput(text)
         val solver = Solver(tiles, reflect = true)
-        println(solver.validSizes)
+        println("Started.")
         solver.solve()
         println(solver.solutions.size)
     }
