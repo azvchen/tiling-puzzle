@@ -3,13 +3,13 @@ import io.reactivex.subjects.PublishSubject
 typealias Solution = Map<Pos, Tile>
 fun List<Tile>.board(): Tile = this.maxBy { it.size } ?: throw IllegalStateException("need at least one tile")
 
-class Solver(tiles: List<Tile>, reflect: Boolean = false) {
+class Solver(tiles: List<Tile>, reflect: Boolean = false, private val log: (Solution, Int) -> Unit = { _, _ -> Unit }) {
     val board = tiles.board()
     val pieces = tiles.filter { it !== board }.sortedByDescending { it.size }
-    val transformFunc = if (reflect) Tile::transformations else Tile::rotations
-    val transforms = pieces.map(transformFunc)
+    private val transformFunc = if (reflect) Tile::transformations else Tile::rotations
+    private val transforms = pieces.map(transformFunc)
 
-    val validSizes = allSums(pieces.map { it.size })
+    private val validSizes = (0 until pieces.size).map { n -> allSums(pieces.drop(n).map { it.size }) }
 
     val solutions = mutableSetOf<Solution>()
 
@@ -19,9 +19,8 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false) {
     fun logSolution(placed: Solution) {
         if (placed !in solutions) {
             solutions.add(placed)
-            onSolution.onNext(placed)
-            println("Solution ${solutions.size}")
-            printPlacedTiles(placed)
+//            onSolution.onNext(placed)
+            log(placed, solutions.size)
         }
     }
 
@@ -44,7 +43,7 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false) {
             logSolution(placed)
             return true
         }
-        if (n >= pieces.size || !hasValidFragments(board)) {
+        if (n >= pieces.size || !hasValidFragments(board, n)) {
             return false
         }
 
@@ -80,9 +79,9 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false) {
         return success
     }
 
-    fun hasValidFragments(board: Tile): Boolean {
+    private fun hasValidFragments(board: Tile, n: Int): Boolean {
         for (fragment in findTiles(board)) {
-            if (fragment.size !in validSizes) {
+            if (fragment.size !in validSizes[n]) {
                 return false
             }
         }
@@ -97,7 +96,7 @@ fun printPlacedTiles(placed: Solution) {
     }
 }
 
-fun allSums(ints: List<Int>): Set<Int> {
+private fun allSums(ints: List<Int>): Set<Int> {
     val sums = mutableSetOf(0)
     for (i in ints) {
         sums += sums.map { it + i }

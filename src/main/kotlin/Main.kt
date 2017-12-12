@@ -1,5 +1,6 @@
 import java.io.File
 import java.io.FileNotFoundException
+import java.lang.management.*
 
 fun main(args: Array<String>) {
     while (true) {
@@ -8,18 +9,43 @@ fun main(args: Array<String>) {
         if (fileName == "q") {
             break
         }
-        val text: String
-        try {
-            text = File(fileName).readText()
-        } catch (e: FileNotFoundException) {
-            println("Invalid file name.")
-            continue
-        }
+        val text =
+            try {
+                File(fileName).readText()
+            } catch (e: FileNotFoundException) {
+                println("Invalid file name.")
+                continue
+            }
         val tiles = textInput(text)
-        val solver = Solver(tiles, reflect = true)
+
+        print("Use tile reflections: ")
+        val reflect = readLine()?.toBoolean() ?: false
+
+        var threshold = 30
+        val bean = ManagementFactory.getThreadMXBean()
+        var firstTime: Long = -1
+        val solver = Solver(tiles, reflect = reflect, log = { placed, n ->
+            if (n == 1) {
+                firstTime = bean.currentThreadCpuTime
+            }
+            if (n <= 30) {
+                println("Solution $n")
+                printPlacedTiles(placed)
+            }
+            else if (n == threshold + 1) {
+                println("More than $threshold solutions.")
+                threshold = if (threshold % 3 == 0) threshold / 3 * 10 else threshold * 3
+            }
+        })
         println("Started.")
+        val startTime = bean.currentThreadCpuTime
         solver.solve()
-        println(solver.solutions.size)
+        val elapsedTime = bean.currentThreadCpuTime - startTime
+        val firstElapsedTime = if (firstTime > 0) firstTime - startTime else -1
+
+        println("Total number of solutions: ${solver.solutions.size}")
+        println("Time for first solution: $firstElapsedTime ns")
+        println("Time for all solutions:  $elapsedTime ns")
     }
 }
 
