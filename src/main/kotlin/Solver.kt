@@ -79,14 +79,8 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false, private val log: (Solu
         return success
     }
 
-    private fun hasValidFragments(board: Tile, n: Int): Boolean {
-        for (fragment in findTiles(board)) {
-            if (fragment.size !in validSizes[n]) {
-                return false
-            }
-        }
-        return true
-    }
+    private fun hasValidFragments(board: Tile, n: Int): Boolean =
+        findTiles(board).all { it.size in validSizes[n] }
 }
 
 fun printPlacedTiles(placed: Solution) {
