@@ -87,7 +87,7 @@ class Solver(private val settings: SolveSettings) {
                 }
             }
         }
-        if (placed.isEmpty()) {
+        if (placed.isEmpty() && !settings.serial) {
             // split computations into threads on first level
             val jobs = transforms[n].map { piece ->
                 async(CommonPool) { compute(piece) }
