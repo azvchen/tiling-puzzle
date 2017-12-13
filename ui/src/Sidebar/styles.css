@@ -1,1 +1,13 @@
+.sidebar-button {
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+}
 
+.sidebar-button .material-icons {
+  font-size: 0.95rem;
+  margin-left: 0.5rem;
+}
+
+.file-picker {
+  font-size: 1rem;
+}

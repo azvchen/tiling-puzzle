@@ -11,16 +11,16 @@ type Props = {
 };
 
 class Grid extends React.Component<Props> {
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps: Props) {
     let tilesEqual =
-      this.tiles === undefined
+      this.props.tiles === undefined
         ? nextProps.tiles === undefined
-        : this.tiles === null && nextProps.tiles === null;
-    if (!tilesEqual && this.tiles && nextProps.tiles) {
+        : this.props.tiles === null && nextProps.tiles === null;
+    if (!tilesEqual && this.props.tiles && nextProps.tiles) {
       // both tiles are defined, check tile equality
       tilesEqual =
-        this.tiles.length === nextProps.tiles.length &&
-        this.tiles.every((tile, i) => tile.equals(nextProps.tiles[i]));
+        this.props.tiles.length === nextProps.tiles.length &&
+        this.props.tiles.every((tile, i) => tile.equals(nextProps.tiles[i]));
     }
     return !tilesEqual || !this.props.board.equals(nextProps.board);
   }

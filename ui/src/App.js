@@ -85,6 +85,7 @@ type Props = {};
 
 type State = {
   board: Board,
+  isRunning: boolean,
   selectedSolution: number,
   snackbarMessage: string,
   snackbarOpen: boolean,
@@ -123,6 +124,7 @@ class App extends Component<Props, State> {
     super(props);
     this.state = {
       board: App.deserializeBoard(null),
+      isRunning: false,
       selectedSolution: -1,
       snackbarOpen: false,
       snackbarMessage: '',
@@ -134,6 +136,7 @@ class App extends Component<Props, State> {
   render() {
     let {
       board,
+      isRunning,
       selectedSolution,
       snackbarMessage,
       snackbarOpen,
@@ -172,6 +175,7 @@ class App extends Component<Props, State> {
         </div>
         <section className="sidebar-view">
           <Sidebar
+            isRunning={isRunning}
             settings={settings}
             onSave={settings => this._onSave(settings)}
             onSubmit={() => this._onSubmit()}
@@ -217,9 +221,11 @@ class App extends Component<Props, State> {
         this.addSolution(data);
         break;
       case 'solving':
+        this.setState({ isRunning: true });
         this.resetSolutions();
         break;
       case 'solved':
+        this.setState({ isRunning: false });
         const solutions = +data;
         this.setState({
           snackbarOpen: true,

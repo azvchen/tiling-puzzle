@@ -2,11 +2,13 @@
 
 import type { SettingType } from '../settings';
 import settings from '../settings';
+import Stopwatch from '../Stopwatch';
 import React from 'react';
 import {
   Button,
   FormControlLabel,
   FormGroup,
+  Icon,
   IconButton,
   Input,
   Snackbar,
@@ -15,6 +17,7 @@ import {
 import './styles.css';
 
 type Props = {
+  isRunning: boolean,
   settings: settings,
   onSave: settings => void,
   onSubmit: () => void,
@@ -32,19 +35,28 @@ const typeMap: Map<string, Inputs> = new Map([
   ['object', 'file'],
 ]);
 
-function Option({ name, value, onChange }): Switch | Input {
+function Option({ disabled, name, value, onChange }): Switch | Input {
   const inputType = typeMap.get(typeof value);
   switch (inputType) {
     case 'checkbox':
       return (
         <FormControlLabel
+          disabled={disabled}
           control={<Switch checked={value} onChange={onChange} value={name} />}
           label={name}
         />
       );
     case 'number':
+      return <Input disabled={disabled} type={inputType} onChange={onChange} />;
     case 'file':
-      return <Input type={inputType} onChange={onChange} />;
+      return (
+        <input
+          className="file-picker"
+          disabled={disabled}
+          type={inputType}
+          onChange={onChange}
+        />
+      );
     default:
       // error, type not supported
       return this;
@@ -61,6 +73,7 @@ class Sidebar extends React.Component<Props, State> {
   }
 
   render() {
+    const { isRunning } = this.props;
     let { snackbarOpen, ...settings } = this.state;
     const closeSnackbar = () => this.setState({ snackbarOpen: false });
 
@@ -71,14 +84,32 @@ class Sidebar extends React.Component<Props, State> {
           {Object.entries(settings).map(([key, value]) => (
             <Option
               key={key}
+              disabled={isRunning}
               name={key}
               value={value}
               onChange={e => this._onChange(key, e.target)}
             />
           ))}
         </FormGroup>
-        <Button onClick={() => this._save()}>Save</Button>
-        <Button onClick={() => this._submit()}>Solve</Button>
+        <Button
+          className="sidebar-button"
+          raised
+          color="primary"
+          disabled={isRunning}
+          onClick={() => this._save()}
+        >
+          Save<Icon>save</Icon>
+        </Button>
+        <Button
+          className="sidebar-button"
+          raised
+          color="accent"
+          disabled={isRunning}
+          onClick={() => this._submit()}
+        >
+          Solve<Icon>send</Icon>
+        </Button>
+        <Stopwatch started={isRunning} />
         <Snackbar
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           autoHideDuration={6000}
