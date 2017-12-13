@@ -1,3 +1,4 @@
+import server.SolveSettings
 import java.io.File
 import java.io.FileNotFoundException
 import java.lang.management.ManagementFactory
@@ -16,7 +17,6 @@ fun main(args: Array<String>) {
                 println("Invalid file name.")
                 continue
             }
-        val tiles = textInput(text)
 
         print("Use tile reflections: ")
         val reflect = readLine()?.toBoolean() ?: false
@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
         var threshold = 30
         val bean = ManagementFactory.getThreadMXBean()
         var firstTime: Long = -1
-        val solver = Solver(tiles, reflect = reflect, log = { placed, n ->
+        val solver = Solver(SolveSettings(puzzle = text, reflections = reflect), log = { placed, n ->
             if (n == 1) {
                 firstTime = bean.currentThreadCpuTime
             }

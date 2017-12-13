@@ -20,11 +20,11 @@ import java.time.Duration
 
 private val server = SolutionServer()
 
-var moshi = Moshi.Builder()
+val moshi = Moshi.Builder()
     .add(TileAdapter())
     .add(PairAdapter())
     .build()
-private var settingsAdapter: JsonAdapter<SolveSettings> = moshi.adapter(SolveSettings::class.java)
+private val settingsAdapter: JsonAdapter<SolveSettings> = moshi.adapter(SolveSettings::class.java)
 
 fun Application.main() {
     install(DefaultHeaders)

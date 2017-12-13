@@ -59,7 +59,7 @@ function Option({ disabled, name, value, onChange }): Switch | Input {
       );
     default:
       // error, type not supported
-      return this;
+      return null;
   }
 }
 

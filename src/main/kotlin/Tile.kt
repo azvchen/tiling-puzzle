@@ -82,6 +82,12 @@ class Tile(_squares: Map<Pos, Color> = mapOf(), pad: Boolean = false) : Comparab
             .distinct()
     }
 
+    val reflections: List<Tile> by lazy {
+        listOf(this, reflectLR, reflectUD, reflectPrim, reflectOff).distinct()
+    }
+
+    val noTransform: List<Tile> by lazy { listOf(this) }
+
     fun copy(): Tile {
         return Tile(squares)
     }

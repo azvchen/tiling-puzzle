@@ -99,17 +99,14 @@ class App extends Component<Props, State> {
     const socket = new WebSocket('ws://localhost:8080/ws');
     socket.addEventListener('open', () => {
       console.log('connected');
-      this.setState({ snackbarOpen: true, snackbarMessage: 'Connected' });
+      this.showSnackbar('Connected');
     });
     socket.addEventListener('close', () => {
       const closeMessage = 'Connection lost, retrying...';
       console.warn('connection lost');
       if (this.state.snackbarMessage !== closeMessage) {
-        this.setState({
-          snackbarOpen: true,
-          snackbarMessage: closeMessage,
-          solutions: [],
-        });
+        this.showSnackbar(closeMessage);
+        this.setState({ isRunning: false });
       }
       setTimeout(
         () => this.setState({ socket: this.createSocket(timeout * 2) }),
@@ -227,12 +224,11 @@ class App extends Component<Props, State> {
       case 'solved':
         this.setState({ isRunning: false });
         const solutions = +data;
-        this.setState({
-          snackbarOpen: true,
-          snackbarMessage: `Solved. ${
-            solutions === 0 ? 'No' : solutions
-          } solution${solutions === 1 ? '' : 's'} found.`,
-        });
+        this.showSnackbar(
+          `Solved. ${solutions === 0 ? 'No' : solutions} solution${
+            solutions === 1 ? '' : 's'
+          } found.`,
+        );
         break;
       default:
         console.warn('Unhandled command:', command, data);
@@ -242,8 +238,8 @@ class App extends Component<Props, State> {
 
   updateBoard(boardString: string) {
     const board = App.deserializeBoard(JSON.parse(boardString));
-    this.setState({ board });
     this.resetSolutions();
+    this.setState({ board });
   }
 
   addSolution(serializedSolutions: string) {
@@ -277,6 +273,7 @@ class App extends Component<Props, State> {
   }
 
   _onSave(settings: settings) {
+    if (this.abortIfSocketBroken()) return;
     const serverSettings = { ...settings };
     const reader = new FileReader();
     reader.onload = event => {
@@ -287,7 +284,18 @@ class App extends Component<Props, State> {
   }
 
   _onSubmit() {
+    if (this.abortIfSocketBroken()) return;
     this.state.socket.send('solve');
+  }
+
+  abortIfSocketBroken(): boolean {
+    if (this.state.socket.readyState === WebSocket.OPEN) return false;
+    this.showSnackbar('Connect to server first!');
+    return true;
+  }
+
+  showSnackbar(message: string) {
+    this.setState({ snackbarOpen: true, snackbarMessage: message });
   }
 }
 

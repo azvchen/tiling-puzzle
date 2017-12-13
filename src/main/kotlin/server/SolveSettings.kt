@@ -1,13 +1,7 @@
 package server
 
-import Tile
-import textInput
-
 data class SolveSettings(
-    val reflections: Boolean = true,
-    val rotations: Boolean = true,
+    val reflections: Boolean = false,
+    val rotations: Boolean = false,
     val puzzle: String = ""
-) {
-    val tiles: List<Tile>
-        get() = textInput(puzzle)
-}
+)

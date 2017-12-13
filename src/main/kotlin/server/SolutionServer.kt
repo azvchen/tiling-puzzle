@@ -11,6 +11,7 @@ import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.io.ByteBuffer
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
+import textInput
 import java.util.concurrent.ConcurrentHashMap
 
 private val pairType = Types.newParameterizedType(Pair::class.java, Integer::class.java, Integer::class.java)
@@ -51,8 +52,9 @@ data class SolveSession(
     val socket: WebSocketSession
 ) {
     suspend fun sendBoard() {
-        if (settings.tiles.isNotEmpty()) {
-            val board = settings.tiles.board()
+        val tiles = textInput(settings.puzzle)
+        if (tiles.isNotEmpty()) {
+            val board = tiles.board()
             message("board", tileAdapter.toJson(board))
         } else {
             send("board")
@@ -61,7 +63,7 @@ data class SolveSession(
 
     suspend fun startSolve() {
         send("solving")
-        val solver = Solver(settings.tiles)
+        val solver = Solver(settings)
         solver.onSolution.subscribe { solution ->
             runBlocking {
                 message("solution", solutionAdapter.toJson(solution))

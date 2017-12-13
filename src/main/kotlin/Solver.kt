@@ -2,16 +2,19 @@ import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
+import server.SolveSettings
 import java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent.atomic.AtomicBoolean
 
 typealias Solution = Map<Pos, Tile>
 fun List<Tile>.board(): Tile = this.maxBy { it.size } ?: throw IllegalStateException("need at least one tile")
 
-class Solver(tiles: List<Tile>, reflect: Boolean = false, private val log: (Solution, Int) -> Unit = { _, _ -> Unit }) {
-    val board = tiles.board()
-    val pieces = tiles.filter { it !== board }.sortedByDescending { it.size }
-    private val transformFunc = if (reflect) Tile::transformations else Tile::rotations
+class Solver(settings: SolveSettings, private val log: (Solution, Int) -> Unit = { _, _ -> Unit }) {
+    private val tiles = textInput(settings.puzzle)
+    private val board = tiles.board()
+    private val pieces = tiles.filter { it !== board }.sortedByDescending { it.size }
+    private val transformFunc = if(settings.reflections && settings.rotations) Tile::transformations
+        else if (settings.rotations) Tile::rotations else if (settings.reflections) Tile::reflections else Tile::noTransform
     private val transforms = pieces.map(transformFunc)
 
     private val validSizes = (0 until pieces.size).map { n -> allSums(pieces.drop(n).map { it.size }) }
