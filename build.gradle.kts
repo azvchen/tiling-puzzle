@@ -54,6 +54,7 @@ dependencies {
     compile("io.ktor", "ktor-server-core", "0.9.0")
     compile("io.ktor", "ktor-server-netty", "0.9.0")
     compile("io.ktor", "ktor-websockets", "0.9.0")
+    compile("ch.qos.logback", "logback-classic", "1.2.1")
 
     compile("com.squareup.moshi", "moshi-kotlin", "1.5.0")
     compile("io.reactivex.rxjava2", "rxjava", "2.1.7")
