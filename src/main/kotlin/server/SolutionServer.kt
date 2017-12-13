@@ -9,6 +9,8 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.io.ByteBuffer
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 import java.util.concurrent.ConcurrentHashMap
 
 private val pairType = Types.newParameterizedType(Pair::class.java, Integer::class.java, Integer::class.java)
@@ -61,11 +63,11 @@ data class SolveSession(
         send("solving")
         val solver = Solver(settings.tiles)
         solver.onSolution.subscribe { solution ->
-            async {
+            runBlocking {
                 message("solution", solutionAdapter.toJson(solution))
             }
         }
-        async {
+        launch {
             solver.solve()
             message("solved", solver.solutions.size.toString())
         }

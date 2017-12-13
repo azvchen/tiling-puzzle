@@ -227,6 +227,7 @@ class App extends Component<Props, State> {
             solutions === 0 ? 'No' : solutions
           } solution${solutions === 1 ? '' : 's'} found.`,
         });
+        break;
       default:
         console.warn('Unhandled command:', command, data);
         break;

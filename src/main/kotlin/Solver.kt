@@ -1,4 +1,9 @@
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.runBlocking
+import java.util.concurrent.ConcurrentSkipListSet
+import java.util.concurrent.atomic.AtomicBoolean
 
 typealias Solution = Map<Pos, Tile>
 fun List<Tile>.board(): Tile = this.maxBy { it.size } ?: throw IllegalStateException("need at least one tile")
@@ -11,14 +16,17 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false, private val log: (Solu
 
     private val validSizes = (0 until pieces.size).map { n -> allSums(pieces.drop(n).map { it.size }) }
 
-    val solutions = mutableSetOf<Solution>()
-
+    val solutions = ConcurrentSkipListSet<Int>()
     val onSolution = PublishSubject.create<Solution>()
 
     fun logSolution(placed: Solution) {
-        if (placed !in solutions) {
-            solutions.add(placed)
-            onSolution.onNext(placed)
+        // mercy
+        val code = placed.hashCode()
+        if (code !in solutions) {
+            val added = solutions.add(code)
+            if (added) {
+                onSolution.onNext(placed)
+            }
             log(placed, solutions.size)
         }
     }
@@ -34,7 +42,9 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false, private val log: (Solu
             Tile::rotateRight
         )
 
-        return placePiece(board, syms = symmetries)
+        val solvable = placePiece(board, syms = symmetries)
+        onSolution.onComplete()
+        return solvable
     }
 
     fun placePiece(board: Tile, n: Int = 0, placed: Solution = emptyMap(), syms: List<(Tile) -> Tile> = emptyList()): Boolean {
@@ -46,11 +56,11 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false, private val log: (Solu
             return false
         }
 
-        val visitedBoards: MutableSet<Tile> = HashSet()
+        val visitedBoards: ConcurrentSkipListSet<Tile> = ConcurrentSkipListSet()
         val symmetries = syms.filter { sym -> sym(board) == board }
 
-        var success = false
-        for (piece in transforms[n]) {
+        val success = AtomicBoolean()
+        val compute = { piece: Tile ->
             for (x in 0 until board.width - piece.width + 1) {
                 for (y in 0 until board.height - piece.height + 1) {
                     if (piece.fitAt(board, x, y)) {
@@ -65,17 +75,29 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false, private val log: (Solu
                             placed = placed.plus(x to y to piece),
                             syms = symmetries
                         )
-                        success = success || result
+                        success.compareAndSet(false, result)
                     }
                 }
             }
         }
-
-        if (board.size <= pieces.listIterator(n + 1).asSequence().map { it.size }.sum()) {
-            success = placePiece(board, n = n + 1, placed = placed, syms = symmetries) || success
+        if (placed.isEmpty()) {
+            // split computations into threads on first level
+            val jobs = transforms[n].map { piece ->
+                async(CommonPool) { compute(piece) }
+            }
+            runBlocking {
+                // collect all of the coroutines
+                jobs.forEach { it.await() }
+            }
+        } else {
+            transforms[n].forEach(compute)
         }
 
-        return success
+        if (board.size <= pieces.listIterator(n + 1).asSequence().map { it.size }.sum()) {
+            success.compareAndSet(false, placePiece(board, n = n + 1, placed = placed, syms = symmetries))
+        }
+
+        return success.get()
     }
 
     private fun hasValidFragments(board: Tile, n: Int): Boolean =

@@ -1,6 +1,6 @@
 import java.io.File
 import java.io.FileNotFoundException
-import java.lang.management.*
+import java.lang.management.ManagementFactory
 
 fun main(args: Array<String>) {
     while (true) {
@@ -28,11 +28,10 @@ fun main(args: Array<String>) {
             if (n == 1) {
                 firstTime = bean.currentThreadCpuTime
             }
-            if (n <= 30) {
+            if (n <= threshold) {
                 println("Solution $n")
                 printPlacedTiles(placed)
-            }
-            else if (n == threshold + 1) {
+            } else if (n == threshold + 1) {
                 println("More than $threshold solutions.")
                 threshold = if (threshold % 3 == 0) threshold / 3 * 10 else threshold * 3
             }

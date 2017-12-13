@@ -1,7 +1,17 @@
 typealias Color = Char
 typealias Pos = Pair<Int, Int>
 
-class Tile(_squares: Map<Pos, Color> = mapOf(), pad: Boolean = false) {
+class Tile(_squares: Map<Pos, Color> = mapOf(), pad: Boolean = false) : Comparable<Tile> {
+    override fun compareTo(other: Tile): Int {
+        // look away
+        val compare = hashCode().compareTo(other.hashCode())
+        return if (compare == 0 && this != other) {
+            this.squares.hashCode().compareTo(other.hashCode())
+        } else {
+            compare
+        }
+    }
+
     companion object {
         @JvmField val blank = ' '
     }
