@@ -10,7 +10,10 @@ typealias Solution = Map<Pos, Tile>
 fun List<Tile>.board(): Tile = this.maxBy { it.size } ?: throw IllegalStateException("need at least one tile")
 
 class Solver(private val settings: SolveSettings) {
-    private val tiles = textInput(settings.puzzle)
+    companion object {
+        fun withTiles(tiles: List<Tile>): Solver = Solver(SolveSettings(tiles = tiles))
+    }
+    private val tiles = settings.tiles ?: textInput(settings.puzzle)
     private val board = tiles.board()
     private val pieces = tiles.filter { it !== board }.sortedByDescending { it.size }
     private val transformFunc = if(settings.reflections && settings.rotations) Tile::transformations
