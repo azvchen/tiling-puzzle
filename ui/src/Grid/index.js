@@ -11,7 +11,17 @@ type Props = {
 
 class Grid extends React.Component<Props> {
   shouldComponentUpdate(nextProps) {
-    return !this.props.board.equals(nextProps.board) || nextProps !== undefined;
+    let tilesEqual =
+      this.tiles === undefined
+        ? nextProps.tiles === undefined
+        : this.tiles === null && nextProps.tiles === null;
+    if (!tilesEqual && this.tiles && nextProps.tiles) {
+      // both tiles are defined, check tile equality
+      tilesEqual =
+        this.tiles.length === nextProps.tiles.length &&
+        this.tiles.every((tile, i) => tile.equals(nextProps.tiles[i]));
+    }
+    return !tilesEqual || !this.props.board.equals(nextProps.board);
   }
 
   render() {
@@ -26,12 +36,7 @@ class Grid extends React.Component<Props> {
     const table = [...Array(board.height)].map(() =>
       [...Array(board.width)].map(() => ({
         color: '',
-        borders: {
-          top: false,
-          bottom: false,
-          left: false,
-          right: false,
-        },
+        borders: [],
       })),
     );
 
@@ -40,11 +45,12 @@ class Grid extends React.Component<Props> {
     }
 
     if (tiles) {
+      // find borders of tiles
       const adjacentOffsets = {
-        top: [-1, 0],
-        bottom: [1, 0],
-        left: [0, -1],
-        right: [0, 1],
+        borderTop: [-1, 0],
+        borderBottom: [1, 0],
+        borderLeft: [0, -1],
+        borderRight: [0, 1],
       };
       for (const tile of tiles) {
         const [dr, dc] = tile.position;
@@ -52,7 +58,7 @@ class Grid extends React.Component<Props> {
           const { borders } = table[r + dr][c + dc];
           for (const [location, [ar, ac]] of Object.entries(adjacentOffsets)) {
             if (!tile.has([r + ar, c + ac])) {
-              borders[location] = true;
+              borders.push(location);
             }
           }
         }
@@ -60,19 +66,19 @@ class Grid extends React.Component<Props> {
     }
 
     return (
-      <table class="grid">
+      <table className="grid">
         <tbody>
           {table.map((row, i) => (
             <tr key={i}>
               {row.map(({ color, borders }, j) => (
                 <td
+                  className="cell"
                   key={`${color}-${j}`}
                   style={Object.assign(
                     toMaterialStyle(color),
-                    { border: '1px solid transparent' },
-                    this._toBorderStyles(borders),
+                    { border: '0px solid white' },
+                    Grid.toBorderStyles(borders),
                   )}
-                  className="cell"
                 >
                   {color}
                 </td>
@@ -84,25 +90,15 @@ class Grid extends React.Component<Props> {
     );
   }
 
-  _toBorderStyles(
-    borderMask: ?{
-      top: boolean,
-      bottom: boolean,
-      left: boolean,
-      right: boolean,
-    },
-  ) {
-    if (!borderMask) {
+  static toBorderStyles(borders: string[]) {
+    if (!borders.length) {
       return {};
     }
-    const { top, bottom, left, right } = borderMask;
-    const color = 'white';
-    return {
-      borderTopColor: top ? color : 'transparent',
-      borderBottomColor: bottom ? color : 'transparent',
-      borderLeftColor: left ? color : 'transparent',
-      borderRightColor: right ? color : 'transparent',
-    };
+    const borderStyles = {};
+    for (const border of borders) {
+      borderStyles[`${border}Width`] = '1px';
+    }
+    return borderStyles;
   }
 }
 

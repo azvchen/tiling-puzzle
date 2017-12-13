@@ -4,7 +4,6 @@ import { IconButton, Snackbar } from 'material-ui';
 import Grid from './Grid';
 import Sidebar from './Sidebar';
 import settings from './settings';
-import { MockBoard, MockSolution } from './MockData';
 import './App.css';
 
 type Coord = [number, number];
@@ -13,11 +12,16 @@ function mapEquals(map1: Map<Coord, string>, map2: Map<Coord, string>) {
   if (map1.size !== map2.size) {
     return false;
   }
-  for (const [key, val] of map1) {
-    const testVal = map2.get(key);
+  const tempMap = new Map();
+  for (const [[r, c], value] of map2) {
+    tempMap.set(`${r} ${c}`, value);
+  }
+  for (const [[r, c], val] of map1) {
+    const key = `${r} ${c}`;
+    const testVal = tempMap.get(key);
     // in cases of an undefined value, make sure the key
     // actually exists on the object so there are no false positives
-    if (testVal !== val || (testVal === undefined && !map2.has(key))) {
+    if (testVal !== val || (testVal === undefined && !tempMap.has(key))) {
       return false;
     }
   }
@@ -64,6 +68,14 @@ export class Tile extends Board {
     super(board.width, board.height, board.squares);
     this.position = position;
   }
+
+  equals(otherTile: Tile): boolean {
+    return (
+      this.position[0] === otherTile.position[0] &&
+      this.position[1] === otherTile.position[1] &&
+      super.equals(otherTile)
+    );
+  }
 }
 
 type Solution = Tile[];
@@ -79,45 +91,41 @@ type State = {
   solutions: Solution[],
 };
 
-function createSocket(app: App, timeout: number): WebSocket {
-  timeout = Math.min(timeout || 500, 8 * 1000);
-  const socket = new WebSocket('ws://localhost:8080/ws');
-  socket.addEventListener('open', () => {
-    console.log('connected');
-    app.setState({ snackbarOpen: true, snackbarMessage: 'Connected' });
-  });
-  socket.addEventListener('close', () => {
-    const closeMessage = 'Connection lost, retrying...';
-    console.warn('connection lost');
-    if (app.state.snackbarMessage !== closeMessage) {
-      app.setState({ snackbarOpen: true, snackbarMessage: closeMessage });
-    }
-    setTimeout(() => {
-      app.setState({ socket: createSocket(app, timeout * 2) });
-    }, timeout);
-  });
-  socket.addEventListener('message', e => app.handleMessage(e.data));
-  return socket;
-}
-
 class App extends Component<Props, State> {
+  createSocket(timeout: number): WebSocket {
+    timeout = Math.min(timeout || 500, 8 * 1000);
+    const socket = new WebSocket('ws://localhost:8080/ws');
+    socket.addEventListener('open', () => {
+      console.log('connected');
+      this.setState({ snackbarOpen: true, snackbarMessage: 'Connected' });
+    });
+    socket.addEventListener('close', () => {
+      const closeMessage = 'Connection lost, retrying...';
+      console.warn('connection lost');
+      if (this.state.snackbarMessage !== closeMessage) {
+        this.setState({
+          snackbarOpen: true,
+          snackbarMessage: closeMessage,
+          solutions: [],
+        });
+      }
+      setTimeout(
+        () => this.setState({ socket: this.createSocket(timeout * 2) }),
+        timeout,
+      );
+    });
+    socket.addEventListener('message', e => this.handleMessage(e.data));
+    return socket;
+  }
+
   constructor(props: Props) {
     super(props);
-    const solution: Solution = [];
-    for (const [position, board] of Object.entries(MockSolution)) {
-      solution.push(
-        new Tile(
-          this.deserializeBoard(board),
-          position.split(' ').map(i => +i),
-        ),
-      );
-    }
     this.state = {
-      board: this.deserializeBoard(MockBoard),
+      board: App.deserializeBoard(null),
       selectedSolution: 0,
       snackbarOpen: false,
       snackbarMessage: '',
-      socket: createSocket(this),
+      socket: this.createSocket(this),
       solutions: [],
     };
   }
@@ -182,7 +190,6 @@ class App extends Component<Props, State> {
       command = data;
       data = null;
     }
-    console.log(command, data);
     switch (command) {
       case 'board':
         this.updateBoard(data);
@@ -190,11 +197,14 @@ class App extends Component<Props, State> {
       case 'solution':
         this.addSolution(data);
         break;
+      default:
+        console.warn('Unhandled command:', command, data);
+        break;
     }
   }
 
   updateBoard(boardString: string) {
-    const board = this.deserializeBoard(JSON.parse(boardString));
+    const board = App.deserializeBoard(JSON.parse(boardString));
     this.setState({ board });
   }
 
@@ -204,16 +214,13 @@ class App extends Component<Props, State> {
       JSON.parse(serializedSolutions),
     )) {
       solution.push(
-        new Tile(
-          this.deserializeBoard(board),
-          position.split(' ').map(i => +i),
-        ),
+        new Tile(App.deserializeBoard(board), position.split(' ').map(i => +i)),
       );
     }
     this.setState({ solutions: this.state.solutions.concat([solution]) });
   }
 
-  deserializeBoard(
+  static deserializeBoard(
     serialized: ?{ width: number, height: number, squares: any },
   ): Board {
     if (!serialized) {
