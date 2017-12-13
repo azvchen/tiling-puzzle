@@ -280,7 +280,11 @@ class App extends Component<Props, State> {
       serverSettings.puzzle = event.target.result;
       this.state.socket.send(`settings ${JSON.stringify(serverSettings)}`);
     };
-    reader.readAsText(settings.puzzle);
+    try {
+      reader.readAsText(settings.puzzle);
+    } catch (e) {
+      this.showSnackbar('Could not read file');
+    }
   }
 
   _onSubmit() {

@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 typealias Solution = Map<Pos, Tile>
 fun List<Tile>.board(): Tile = this.maxBy { it.size } ?: throw IllegalStateException("need at least one tile")
 
-class Solver(settings: SolveSettings, private val log: (Solution, Int) -> Unit = { _, _ -> Unit }) {
+class Solver(private val settings: SolveSettings, private val log: (Solution, Int) -> Unit = { _, _ -> Unit }) {
     private val tiles = textInput(settings.puzzle)
     private val board = tiles.board()
     private val pieces = tiles.filter { it !== board }.sortedByDescending { it.size }
@@ -35,17 +35,24 @@ class Solver(settings: SolveSettings, private val log: (Solution, Int) -> Unit =
     }
 
     fun solve(): Boolean {
-        val symmetries: List<(Tile) -> Tile> = listOf<(Tile) -> Tile>(
-            Tile::reflectLR,
-            Tile::reflectUD,
-            Tile::reflectPrim,
-            Tile::reflectOff,
-            Tile::rotateLeft,
-            Tile::rotateAbout,
-            Tile::rotateRight
-        )
+        val symmetries: MutableList<(Tile) -> Tile> = mutableListOf()
+        if (settings.reflections) {
+            symmetries += listOf(
+                Tile::reflectLR,
+                Tile::reflectUD,
+                Tile::reflectPrim,
+                Tile::reflectOff
+            )
+        }
+        if (settings.rotations) {
+            symmetries += listOf(
+                Tile::rotateLeft,
+                Tile::rotateAbout,
+                Tile::rotateRight
+            )
+        }
 
-        val solvable = placePiece(board, syms = symmetries)
+        val solvable = placePiece(board, syms = symmetries.toList())
         onSolution.onComplete()
         return solvable
     }
