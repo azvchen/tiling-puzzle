@@ -219,6 +219,14 @@ class App extends Component<Props, State> {
       case 'solving':
         this.resetSolutions();
         break;
+      case 'solved':
+        const solutions = +data;
+        this.setState({
+          snackbarOpen: true,
+          snackbarMessage: `Solved. ${
+            solutions === 0 ? 'No' : solutions
+          } solution${solutions === 1 ? '' : 's'} found.`,
+        });
       default:
         console.warn('Unhandled command:', command, data);
         break;

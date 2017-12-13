@@ -13,8 +13,7 @@ class Solver(tiles: List<Tile>, reflect: Boolean = false, private val log: (Solu
 
     val solutions = mutableSetOf<Solution>()
 
-    private val onSolution = PublishSubject.create<Solution>()
-    val observable get() = onSolution
+    val onSolution = PublishSubject.create<Solution>()
 
     fun logSolution(placed: Solution) {
         if (placed !in solutions) {

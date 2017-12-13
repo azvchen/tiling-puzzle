@@ -60,13 +60,14 @@ data class SolveSession(
     suspend fun startSolve() {
         send("solving")
         val solver = Solver(settings.tiles)
-        solver.observable.subscribe { solution ->
+        solver.onSolution.subscribe { solution ->
             async {
                 message("solution", solutionAdapter.toJson(solution))
             }
         }
         async {
             solver.solve()
+            message("solved", solver.solutions.size.toString())
         }
     }
 
