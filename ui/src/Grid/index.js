@@ -6,6 +6,7 @@ import './styles.css';
 
 type Props = {
   board: Board,
+  mini?: boolean,
   tiles?: ?(Tile[]),
 };
 
@@ -25,7 +26,7 @@ class Grid extends React.Component<Props> {
   }
 
   render() {
-    const { board, tiles } = this.props;
+    const { board, tiles, mini } = this.props;
     if (!board || board.isEmpty()) {
       return <h1>No board.</h1>;
     }
@@ -67,7 +68,7 @@ class Grid extends React.Component<Props> {
 
     return (
       <table className="grid">
-        <tbody>
+        <tbody className={mini ? 'mini' : null}>
           {table.map((row, i) => (
             <tr key={i}>
               {row.map(({ color, borders }, j) => (
@@ -76,7 +77,7 @@ class Grid extends React.Component<Props> {
                   key={`${color}-${j}`}
                   style={Object.assign(
                     toMaterialStyle(color),
-                    { border: '0px solid white' },
+                    { border: '0 solid white' },
                     Grid.toBorderStyles(borders),
                   )}
                 >
@@ -94,7 +95,12 @@ class Grid extends React.Component<Props> {
     if (!borders.length) {
       return {};
     }
-    const borderStyles = {};
+    const borderStyles = {
+      borderTopWidth: '0',
+      borderBottomWidth: '0',
+      borderLeftWidth: '0',
+      borderRightWidth: '0',
+    };
     for (const border of borders) {
       borderStyles[`${border}Width`] = '1px';
     }

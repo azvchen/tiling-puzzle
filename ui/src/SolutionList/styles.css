@@ -1,0 +1,36 @@
+.solution-list {
+  list-style: none;
+  display: flex;
+  overflow-x: scroll;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.solution {
+  flex-shrink: 0;
+  padding: 1rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.solution.selected {
+  background-color: #888;
+}
+
+.solution:hover {
+  background-color: gray;
+}
+
+.solution:active {
+  background-color: #555;
+}
+
+.solution-ticker {
+  position: fixed;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+}

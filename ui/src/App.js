@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { IconButton, Snackbar } from 'material-ui';
 import Grid from './Grid';
 import Sidebar from './Sidebar';
+import SolutionList from './SolutionList';
 import settings from './settings';
 import './App.css';
 
@@ -78,7 +79,7 @@ export class Tile extends Board {
   }
 }
 
-type Solution = Tile[];
+export type Solution = Tile[];
 
 type Props = {};
 
@@ -142,15 +143,27 @@ class App extends Component<Props, State> {
 
     return (
       <div className="App">
-        <section className="grid-view">
-          <Grid board={board} />
-        </section>
-        <section className="grid-view">
-          <Grid
-            board={board}
-            tiles={solutions.length ? solutions[selectedSolution] : null}
-          />
-        </section>
+        <div className="vertical-container">
+          <div className="horizontal-container">
+            <section className="grid-view">
+              <Grid board={board} />
+            </section>
+            <section className="grid-view">
+              <Grid
+                board={board}
+                tiles={solutions.length ? solutions[selectedSolution] : null}
+              />
+            </section>
+          </div>
+          <section className="solution-list-view">
+            <SolutionList
+              board={board}
+              selectedSolution={selectedSolution}
+              solutions={solutions}
+              onSelect={selectedSolution => this.setState({ selectedSolution })}
+            />
+          </section>
+        </div>
         <section className="sidebar-view">
           <Sidebar
             settings={settings}
@@ -160,7 +173,7 @@ class App extends Component<Props, State> {
         </section>
         <Snackbar
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          autoHideDuration={6000}
+          autoHideDuration={3000}
           open={snackbarOpen}
           onRequestClose={closeSnackbar}
           SnackbarContentProps={{
@@ -197,6 +210,9 @@ class App extends Component<Props, State> {
       case 'solution':
         this.addSolution(data);
         break;
+      case 'solving':
+        this.setState({ solutions: [], selectedSolution: 0 });
+        break;
       default:
         console.warn('Unhandled command:', command, data);
         break;
@@ -205,7 +221,7 @@ class App extends Component<Props, State> {
 
   updateBoard(boardString: string) {
     const board = App.deserializeBoard(JSON.parse(boardString));
-    this.setState({ board });
+    this.setState({ board, solutions: [], selectedSolution: 0 });
   }
 
   addSolution(serializedSolutions: string) {

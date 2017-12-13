@@ -4,6 +4,17 @@
   font-family: 'Roboto', sans-serif;
 }
 
+.vertical-container {
+  display: flex;
+  flex-direction: column;
+  width: 80vw;
+}
+
+.horizontal-container {
+  display: flex;
+  flex-grow: 1;
+}
+
 .grid-view {
   display: flex;
   flex-grow: 1;
@@ -12,8 +23,13 @@
   justify-content: center;
 }
 
+.solution-list-view {
+  background-color: darkgray;
+}
+
 .sidebar-view {
   padding: 0 1rem;
   background-color: lightgray;
   height: 100%;
+  width: 20vw;
 }
