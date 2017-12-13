@@ -27,7 +27,7 @@ class Grid extends React.Component<Props> {
 
   render() {
     const { board, tiles, mini } = this.props;
-    if (!board || board.isEmpty()) {
+    if (board.isEmpty()) {
       return <h1>No board.</h1>;
     }
     if (tiles === null) {
@@ -36,7 +36,7 @@ class Grid extends React.Component<Props> {
     }
     const table = [...Array(board.height)].map(() =>
       [...Array(board.width)].map(() => ({
-        color: '',
+        color: null,
         borders: [],
       })),
     );
@@ -76,7 +76,7 @@ class Grid extends React.Component<Props> {
                   className="cell"
                   key={`${color}-${j}`}
                   style={Object.assign(
-                    toMaterialStyle(color),
+                    color ? toMaterialStyle(color) : { background: 'none' },
                     { border: '0 solid white' },
                     Grid.toBorderStyles(borders),
                   )}

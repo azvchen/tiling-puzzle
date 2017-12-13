@@ -13,6 +13,7 @@
   padding: 1rem;
   cursor: pointer;
   user-select: none;
+  transition: background-color 0.1s linear;
 }
 
 .solution.selected {
@@ -33,4 +34,8 @@
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.8rem;
+}
+
+.solution-ticker:hover {
+  opacity: 0.3;
 }

@@ -123,7 +123,7 @@ class App extends Component<Props, State> {
     super(props);
     this.state = {
       board: App.deserializeBoard(null),
-      selectedSolution: 0,
+      selectedSolution: -1,
       snackbarOpen: false,
       snackbarMessage: '',
       socket: this.createSocket(this),
@@ -140,6 +140,10 @@ class App extends Component<Props, State> {
       solutions,
     } = this.state;
     const closeSnackbar = () => this.setState({ snackbarOpen: false });
+    if (selectedSolution < 0) {
+      // no solution selected, auto-advance to latest solution
+      selectedSolution = solutions.length - 1;
+    }
 
     return (
       <div className="App">
@@ -148,12 +152,14 @@ class App extends Component<Props, State> {
             <section className="grid-view">
               <Grid board={board} />
             </section>
-            <section className="grid-view">
-              <Grid
-                board={board}
-                tiles={solutions.length ? solutions[selectedSolution] : null}
-              />
-            </section>
+            {!board.isEmpty() && (
+              <section className="grid-view">
+                <Grid
+                  board={board}
+                  tiles={solutions.length ? solutions[selectedSolution] : null}
+                />
+              </section>
+            )}
           </div>
           <section className="solution-list-view">
             <SolutionList
@@ -211,7 +217,7 @@ class App extends Component<Props, State> {
         this.addSolution(data);
         break;
       case 'solving':
-        this.setState({ solutions: [], selectedSolution: 0 });
+        this.resetSolutions();
         break;
       default:
         console.warn('Unhandled command:', command, data);
@@ -221,7 +227,8 @@ class App extends Component<Props, State> {
 
   updateBoard(boardString: string) {
     const board = App.deserializeBoard(JSON.parse(boardString));
-    this.setState({ board, solutions: [], selectedSolution: 0 });
+    this.setState({ board });
+    this.resetSolutions();
   }
 
   addSolution(serializedSolutions: string) {
@@ -234,6 +241,10 @@ class App extends Component<Props, State> {
       );
     }
     this.setState({ solutions: this.state.solutions.concat([solution]) });
+  }
+
+  resetSolutions() {
+    this.setState({ solutions: [], selectedSolution: -1 });
   }
 
   static deserializeBoard(

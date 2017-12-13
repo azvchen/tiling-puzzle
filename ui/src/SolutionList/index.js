@@ -1,7 +1,7 @@
 import type { Solution } from '../App';
+import { Board } from '../App';
 import { Chip } from 'material-ui';
 import React from 'react';
-import { Board } from '../App';
 import Grid from '../Grid';
 import './styles.css';
 
@@ -16,7 +16,7 @@ class SolutionList extends React.Component<Props> {
   render() {
     const { board, selectedSolution, solutions, onSelect } = this.props;
     if (!solutions.length) {
-      return null;
+      return <ol className="solution-list" style={{ height: 0 }} />;
     }
     return (
       <ol className="solution-list">
